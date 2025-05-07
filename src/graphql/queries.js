@@ -19,10 +19,23 @@ export const GET_ITEM_DETAILS = gql`
       itemParts {
         id
         name
+        parent{
+          id
+          name
+        }
+        children{
+          id
+          name
+        }
         partAttributes {
           id
           name
           price
+          stock
+          incompatibleAttributes{
+            id
+            name
+          }
         }
       }
     }
