@@ -36,6 +36,12 @@ export const GET_ITEM_DETAILS = gql`
             id
             name
           }
+          priceRules {
+              id
+              dependencyPartAttributeId
+              operator
+              priceAdjustment
+          }
         }
       }
     }

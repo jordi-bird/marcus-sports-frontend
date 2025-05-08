@@ -19,6 +19,8 @@ const ConfigureItem = () => {
     }));
   };
 
+  // Funció per construir l'arbre de parts
+
   const buildItemPartTree = (parts) => {
     const partMap = {};
     const rootParts = [];
@@ -46,10 +48,30 @@ const ConfigureItem = () => {
 
   const item = data.item;
   const rootParts = buildItemPartTree(item.itemParts);
-  const totalPrice = Object.values(selectedOptions).reduce(
-    (acc, attr) => acc + attr.price,
-    0
-  );
+
+  // Calculem el preu total aplicant les regles de preu a cada part seleccionada
+  const totalPrice = Object.values(selectedOptions).reduce((acc, attr) => {
+    let basePrice = attr.price;
+  
+    // Aplica priceRules si cal
+    if (attr.priceRules && attr.priceRules.length > 0) {
+      attr.priceRules.forEach(rule => {
+        const dependencyAttr = Object.values(selectedOptions).find(
+          selected => selected.id === rule.dependencyPartAttributeId
+        );
+        if (dependencyAttr) {
+          if (rule.operator === 'add') {
+            basePrice += rule.priceAdjustment;
+          } else if (rule.operator === 'multiply') {
+            basePrice *= rule.priceAdjustment;
+          }
+        }
+      });
+    }
+  
+    return acc + basePrice;
+  }, 0);
+
 
   return (
     <div className="p-6 mb-6">
