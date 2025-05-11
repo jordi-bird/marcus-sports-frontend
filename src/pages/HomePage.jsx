@@ -1,7 +1,7 @@
 // src/pages/Home.jsx
 import React from 'react';
 import { useQuery } from '@apollo/client';
-import { GET_ITEMS } from '../graphql/queries';
+import { GET_ITEMS } from '../graphql/itemQueries';
 import { useNavigate } from 'react-router-dom';
 
 const Home = () => {

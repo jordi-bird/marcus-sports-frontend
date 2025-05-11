@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useState } from 'react';
 import { useQuery } from '@apollo/client';
-import { GET_ITEM } from '../graphql/queries';
+import { GET_ITEM } from '../graphql/itemQueries';
 import PartSection from '../components/PartSection';
 import updateCompatibilityRules from '../utils/selectUtils';
 import  getAdjustedPrice from '../utils/priceUtils';
