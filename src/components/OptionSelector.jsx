@@ -27,9 +27,25 @@ export default function OptionSelector({
           );
         case 'compatibility':
           return (
-            <p key={`${option.id}-${rule.id}`} className="text-right text-xs text-indigo-500 ml-1 p-1">
-              Només Compatible amb: <strong>{option.id === rule.targetOption.id? rule.sourceOption.name:rule.targetOption.name}</strong>
-            </p>
+            <>
+              {option.id === rule.sourceOption.id && (
+                <p key={`${option.id}-${rule.id}`} className="text-right text-xs text-indigo-500 ml-1 p-1">
+                  Només compatible amb: <strong>{rule.targetOption.name}</strong>
+                </p>
+              )}
+        
+              {option.id === rule.targetOption.id && rule.reciprocal && (
+                <p key={`${option.id}-${rule.id}-reciprocal`} className="text-right text-xs text-indigo-500 ml-1 p-1">
+                  Només compatible amb: <strong>{rule.sourceOption.name}</strong>
+                </p>
+              )}
+        
+              {option.id === rule.targetOption.id && !rule.reciprocal && (
+                <p key={`${option.id}-${rule.id}-unique`} className="text-right text-xs text-gray-400 ml-1 p-1">
+                  Única compatible per: <strong>{rule.sourceOption.name}</strong>
+                </p>
+              )}
+            </>
           );
         case 'price_modifier':
           return (
