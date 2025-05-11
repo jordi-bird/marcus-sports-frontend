@@ -1,6 +1,7 @@
 import OptionSelector from './OptionSelector';
 
-export default function AttributeBlock({ attribute, selectedOptions, handleSelect }) {
+export default function AttributeBlock({ attribute, selectedOptions, singleCompatibilityRules, handleSelect }) {
+  
   const calculateFinalPrice = (option) => {
     let final = option.price;
 
@@ -30,26 +31,35 @@ export default function AttributeBlock({ attribute, selectedOptions, handleSelec
         {attribute.itemPartAttributeOptions.map(option => {
           const isSelected = selectedOptions[attribute.id]?.id === option.id;
           
-          const incompatibleWith = Object.values(selectedOptions).filter(selected => {
-            return option.rules?.some(rule => {
-              return (
-                rule.ruleType === 'incompatibility' &&
-                (
-                  rule.targetOption?.id === selected.id || 
-                  (rule.reciprocal && rule.sourceOption?.id === selected.id)
-                )
-              );
-            });
+          //Gestió d'Incompatibilitats
+          const selectedIds = new Set(Object.values(selectedOptions).map(opt => opt.id));
+          
+          // Mirem si la opció és incompatible amb alguna altra seleccionada
+          const isIncompatible = (option.rules || []).some(rule => {
+            if (rule.ruleType === 'incompatibility') {
+              return rule.reciprocal
+                ? selectedIds.has(rule.sourceOption?.id) || selectedIds.has(rule.targetOption?.id)
+                : selectedIds.has(rule.sourceOption?.id);
+            }
           });
+
+          // Mirem si està activada una regla de compatibilitat única que inhabilita la opció
+          const isBlockedByCompatibility = 
+            singleCompatibilityRules &&
+            singleCompatibilityRules[attribute.id] &&
+            singleCompatibilityRules[attribute.id] !== option.id;
+
+          const isDisabled = isIncompatible || isBlockedByCompatibility;
           
           const finalPrice = calculateFinalPrice(option);
+
 
           return (
             <OptionSelector
               key={option.id}
               option={option}
               isSelected={isSelected}
-              incompatibleWith={incompatibleWith}
+              isDisabled={isDisabled}
               finalPrice={finalPrice}
               /* onClick={() =>
                 !isIncompatible && handleSelect(attribute.id, option)

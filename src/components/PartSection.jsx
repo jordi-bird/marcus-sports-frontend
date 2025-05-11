@@ -1,6 +1,6 @@
 import AttributeBlock from './AttributeBlock';
 
-export default function PartSection({ part, level, selectedOptions, handleSelect }) {
+export default function PartSection({ part, level, selectedOptions, singleCompatibilityRules, handleSelect }) {
   const indent = `ml-${level * 4}`;
 
   const parentClasses = level
@@ -24,6 +24,7 @@ export default function PartSection({ part, level, selectedOptions, handleSelect
           attribute={attr} 
           selectedOptions={selectedOptions}
           handleSelect={handleSelect}
+          singleCompatibilityRules={singleCompatibilityRules}
         />
       ))}
 
@@ -35,6 +36,7 @@ export default function PartSection({ part, level, selectedOptions, handleSelect
           level={level + 1}  
           selectedOptions={selectedOptions}
           handleSelect={handleSelect}
+          singlecCompatibilityRules={singleCompatibilityRules}
         />
       ))}
     </div>

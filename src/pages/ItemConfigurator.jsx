@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_ITEM } from '../graphql/queries';
 import PartSection from '../components/PartSection';
+import updateCompatibilityRules from '../utils/selectUtils';
 
 export default function ItemConfigurator() {
   const { itemId } = useParams();
@@ -13,14 +14,75 @@ export default function ItemConfigurator() {
   });
 
   const [selectedOptions, setSelectedOptions] = useState({});
+  const [singleCompatibilityRules, setSingleCompatibilityRules] = useState({});
+
 
   const handleSelect = (attributeId, option) => {
-    setSelectedOptions(prev => ({
-      ...prev,
-      [attributeId]: option,
-    }));
-    console.log(selectedOptions);
+    setSelectedOptions(prev => {
+      const previousOption = prev[attributeId];
+      const updatedSelectedOptions = {
+        ...prev,
+        [attributeId]: option,
+      };
+      /*
+      // 1. Neteja regles aplicades per l'anterior opció seleccionada
+      
+      if (previousOption) {
+        const previousCompatibilityRules = previousOption.rules?.filter(r => r.ruleType === 'compatibility');
+  
+        if (previousCompatibilityRules?.length) {
+          setSingleCompatibilityRules(prevRules => {
+            const updatedRules = { ...prevRules };
+  
+            previousCompatibilityRules.forEach(rule => {
+              const targetAttribute = parts
+                .flatMap(part => part.itemPartAttributes)
+                .find(attr =>
+                  attr.itemPartAttributeOptions.some(opt => opt.id === rule.targetOption?.id)
+                );
+  
+              if (targetAttribute && updatedRules[targetAttribute.id] === rule.targetOption.id) {
+                delete updatedRules[targetAttribute.id];
+              }
+            });
+  
+            return updatedRules;
+          });
+        }
+      }
+  
+      // 2. Aplica noves regles si n'hi ha a la nova opció
+      const compatibilityRules = option.rules?.filter(r => r.ruleType === 'compatibility');
+      if (compatibilityRules?.length) {
+        const updatedCompatibility = {};
+  
+        compatibilityRules.forEach(rule => {
+          const targetAttribute = parts
+            .flatMap(part => part.itemPartAttributes)
+            .find(attr =>
+              attr.itemPartAttributeOptions.some(opt => opt.id === rule.targetOption?.id)
+            );
+  
+          if (targetAttribute) {
+            updatedCompatibility[targetAttribute.id] = rule.targetOption.id;
+          }
+        });
+  
+        setSingleCompatibilityRules(prev => ({
+          ...prev,
+          ...updatedCompatibility
+        }));
+      }
+  
+      return updatedSelectedOptions;
+      */
+      const updatedRules = updateCompatibilityRules(option, previousOption, parts, singleCompatibilityRules);
+      setSingleCompatibilityRules(updatedRules);
+      return updatedSelectedOptions
+      
+    });
   };
+
 
 
   const totalPrice = Object.values(selectedOptions).reduce((acc, attr) => {
@@ -58,6 +120,7 @@ export default function ItemConfigurator() {
           part={part} 
           selectedOptions={selectedOptions}
           handleSelect={handleSelect}
+          singleCompatibilityRules={singleCompatibilityRules}
           level={0}
         />
       ))}

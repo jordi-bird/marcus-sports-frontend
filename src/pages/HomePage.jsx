@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const { loading, error, data } = useQuery(GET_ITEMS);
+  
   const navigate = useNavigate();
 
   if (loading) return <p className="text-center text-xl text-gray-500">Carregant productes...</p>;

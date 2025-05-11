@@ -62,6 +62,7 @@ export const GET_ITEM = gql`
               price
               stock
               rules {
+                id
                 sourceOption {
                   id
                   name
