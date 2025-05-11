@@ -6,17 +6,21 @@ export default function AttributeBlock({ attribute, selectedOptions, singleCompa
     let final = option.price;
 
     // Aplica ajustos segons regles de dependència
-    option.priceRules?.forEach(rule => {
+    //Si existeix una opcio seleccionada que és igual a la sourceOption de la regla
+    // i la regla és de tipus price_modifier, i l
+    option.rules?.filter(r => r.ruleType === 'price_modifier' && r.targetOption.id == option.id)?.forEach(rule => {
       const dependencyAttr = Object.values(selectedOptions).find(
-        selected => selected.id === rule.dependencyPartAttributeId
+        selected => selected.id === rule.sourceOption.id
       );
       if (dependencyAttr) {
-        if (rule.operator === 'add') {
-          final += rule.priceAdjustment;
-        } else if (rule.operator === 'multiply') {
-          final *= rule.priceAdjustment;
+        if (rule.operation === 'add') {
+          final += rule.value;
+        } else if (rule.operation === 'multiply') {
+          final *= rule.value;
         }
       }
+      console.log("preu final: "+final);  
+
     });
 
     return final;

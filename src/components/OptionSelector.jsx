@@ -1,5 +1,6 @@
-//import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-//import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
+
 import { useState } from 'react';
 
 export default function OptionSelector({
@@ -33,7 +34,7 @@ export default function OptionSelector({
         case 'price_modifier':
           return (
             <p key={`${option.id}-${rule.id}`} className="text-right text-xs text-blue-500 ml-1 p-1">
-              Alertació de preu amb: <strong>{rule.targetOption?.name}</strong>
+              Alertació de preu amb: <strong>{option.id === rule.targetOption.id? rule.sourceOption.name:rule.targetOption.name}</strong>
             </p>
           );
         default:

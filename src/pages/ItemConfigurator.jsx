@@ -4,6 +4,9 @@ import { useQuery } from '@apollo/client';
 import { GET_ITEM } from '../graphql/queries';
 import PartSection from '../components/PartSection';
 import updateCompatibilityRules from '../utils/selectUtils';
+import  getAdjustedPrice from '../utils/priceUtils';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronUp, faChevronDown, faArrowRight, faShoppingBasket, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 
 export default function ItemConfigurator() {
   const { itemId } = useParams();
@@ -15,6 +18,7 @@ export default function ItemConfigurator() {
 
   const [selectedOptions, setSelectedOptions] = useState({});
   const [singleCompatibilityRules, setSingleCompatibilityRules] = useState({});
+  const [showSummary, setShowSummary] = useState(false);
 
 
   const handleSelect = (attributeId, option) => {
@@ -24,58 +28,7 @@ export default function ItemConfigurator() {
         ...prev,
         [attributeId]: option,
       };
-      /*
-      // 1. Neteja regles aplicades per l'anterior opció seleccionada
-      
-      if (previousOption) {
-        const previousCompatibilityRules = previousOption.rules?.filter(r => r.ruleType === 'compatibility');
-  
-        if (previousCompatibilityRules?.length) {
-          setSingleCompatibilityRules(prevRules => {
-            const updatedRules = { ...prevRules };
-  
-            previousCompatibilityRules.forEach(rule => {
-              const targetAttribute = parts
-                .flatMap(part => part.itemPartAttributes)
-                .find(attr =>
-                  attr.itemPartAttributeOptions.some(opt => opt.id === rule.targetOption?.id)
-                );
-  
-              if (targetAttribute && updatedRules[targetAttribute.id] === rule.targetOption.id) {
-                delete updatedRules[targetAttribute.id];
-              }
-            });
-  
-            return updatedRules;
-          });
-        }
-      }
-  
-      // 2. Aplica noves regles si n'hi ha a la nova opció
-      const compatibilityRules = option.rules?.filter(r => r.ruleType === 'compatibility');
-      if (compatibilityRules?.length) {
-        const updatedCompatibility = {};
-  
-        compatibilityRules.forEach(rule => {
-          const targetAttribute = parts
-            .flatMap(part => part.itemPartAttributes)
-            .find(attr =>
-              attr.itemPartAttributeOptions.some(opt => opt.id === rule.targetOption?.id)
-            );
-  
-          if (targetAttribute) {
-            updatedCompatibility[targetAttribute.id] = rule.targetOption.id;
-          }
-        });
-  
-        setSingleCompatibilityRules(prev => ({
-          ...prev,
-          ...updatedCompatibility
-        }));
-      }
-  
-      return updatedSelectedOptions;
-      */
+      // Actualitza les regles de compatibilitat
       const updatedRules = updateCompatibilityRules(option, previousOption, parts, singleCompatibilityRules);
       setSingleCompatibilityRules(updatedRules);
       return updatedSelectedOptions
@@ -85,27 +38,10 @@ export default function ItemConfigurator() {
 
 
 
-  const totalPrice = Object.values(selectedOptions).reduce((acc, attr) => {
-    let basePrice = attr.price;
-
-    // Aplica priceRules si cal
-    if (attr.priceRules && attr.priceRules.length > 0) {
-      attr.priceRules.forEach(rule => {
-        const dependencyAttr = Object.values(selectedOptions).find(
-          selected => selected.id === rule.dependencyPartAttributeId
-        );
-        if (dependencyAttr) {
-          if (rule.operator === 'add') {
-            basePrice += rule.priceAdjustment;
-          } else if (rule.operator === 'multiply') {
-            basePrice *= rule.priceAdjustment;
-          }
-        }
-      });
-    }
-
-    return acc + basePrice;
+  const totalPrice = Object.values(selectedOptions).reduce((acc, option) => {
+    return acc + getAdjustedPrice(option, selectedOptions);
   }, 0);
+  
 
   if (loading) return <p>Carregant...</p>;
 
@@ -124,8 +60,63 @@ export default function ItemConfigurator() {
           level={0}
         />
       ))}
-      <div className="fixed bottom-0 left-0 right-0 bg-white p-4 border-t text-xl font-semibold text-right">
-        Preu total: {totalPrice.toFixed(2)} €
+      <div className="h-64"/>
+      <div className="fixed bottom-0 left-0 right-0 bg-white  p-4 text-sm shadow-lg border-t-4 border-indigo-200 ">
+        <div className="flex justify-between items-center mb-2">
+        <h3 className="text-lg">Checkout</h3>
+        <button
+            onClick={() => setShowSummary(prev => !prev)}
+            className="text-blue-600 text-sm ml-4 mt-1"
+            title={showSummary ? 'Amaga seleccions' : 'Mostra seleccions'}
+          >
+            <FontAwesomeIcon icon={showSummary ? faChevronDown : faChevronUp} size="lg" />
+          </button>
+        </div>
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            {showSummary && (
+              <ul className="text-gray-700 max-h-48 overflow-y-auto border-t pt-2 text-sm">
+                {Object.entries(selectedOptions).map(([attrId, option]) => {
+                  const adjustedPrice = getAdjustedPrice(option, selectedOptions);
+                  const hasOverride = adjustedPrice !== option.price;
+
+                  return (
+                    <li key={attrId} className="flex justify-between border-b py-1">
+                      <span>{option.name}</span>
+                      <span>
+                        {hasOverride ? (
+                          <>
+                            <span className="line-through text-gray-400 mr-1">{option.price.toFixed(2)} €</span>
+                            <span className="text-gray-800 font-semibold">{adjustedPrice.toFixed(2)} €</span>
+                          </>
+                        ) : (
+                          <span>{option.price.toFixed(2)} €</span>
+                        )}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            <div className="flex flex-col items-end mt-2">
+              <p className="text-lg font-semibold">Preu total: {totalPrice.toFixed(2)} €</p>
+              {totalPrice > 0 && (
+                <button
+                  className="mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded"
+                  onClick={() => {
+                    // navigate(`/checkout/${itemId}`);
+                    alert('Funcionalitat de checkout pendent de desenvolupar.');
+                  }}
+                >
+                  Comprar <FontAwesomeIcon icon={faShoppingCart} size="lg" />
+                </button>
+              )}
+            </div>
+
+          </div>
+
+          
+        </div>
       </div>
     </div>
   );
