@@ -11,7 +11,7 @@ export const GET_ITEMS = gql`
 `;
 
 export const GET_ITEM = gql`
-  query($itemId: ID!) {
+  query GetItem($itemId: ID!) {
       item(id: $itemId) {
         id
         name
@@ -20,10 +20,46 @@ export const GET_ITEM = gql`
           id
           name
           description
+          parentId
           children {
             id
             name
             description
+            parentId
+            children {
+              id
+              name
+              description
+              parentId
+              itemPartAttributes {
+                id
+                name
+                itemPartAttributeOptions {
+                  id
+                  name
+                  price
+                  stock
+                  rules {
+                    sourceOption {
+                      id
+                      name
+                    }
+                    targetOption {
+                      id
+                      name
+                    }
+                    targetPart {
+                      id
+                      name
+                    }
+                    ruleType
+                    reciprocal
+                    operation
+                    value
+                  }
+                }
+              }
+            }
             itemPartAttributes {
               id
               name
@@ -92,9 +128,12 @@ export const GET_ITEM = gql`
 export const GET_ITEM_PARTS = gql`
     query($itemId: ID!) {
         item(id: $itemId) {
+            id
+            __typename
             name
             itemParts {
-                id  
+                id 
+                __typename 
                 name
                 description
                 children {
@@ -105,19 +144,7 @@ export const GET_ITEM_PARTS = gql`
     }
 `;
 
-export const GET_ITEM_PART_ATTRIBUTES = gql`
-    query($itemPartId: ID!) {
-        itemPart(id: $itemPartId) {
-            id  
-            name
-            description
-            itemPartAttributes {
-                id
-                name
-            }
-        }
-    }
-`;
+
 
 export const GET_ITEM_PART_ATTRIBUTE_OPTIONS = gql`
     query($itemPartAttributeId: ID!) {
@@ -151,72 +178,4 @@ export const GET_ITEM_PART_ATTRIBUTE_OPTIONS = gql`
         }
     }
 `;
-
-/*
-{
-  items {
-    itemParts {
-      name
-      description
-      children {
-        name
-        description
-        itemPartAttributes {
-          name
-          itemPartAttributeOptions {
-            name
-            price
-            stock
-            rules {
-              sourceOption {
-                id
-                name
-              }
-              targetOption {
-                id
-                name
-              }
-              targetPart {
-                id
-                name
-              }
-              ruleType
-              reciprocal
-              operation
-              value
-            }
-          }
-        }
-      }
-      itemPartAttributes {
-        name
-        itemPartAttributeOptions {
-          name
-          price
-          stock
-          rules {
-            sourceOption {
-              id
-              name
-            }
-            targetOption {
-              id
-              name
-            }
-            targetPart {
-              id
-              name
-            }
-            ruleType
-            reciprocal
-            operation
-            value
-          }
-        }
-      }
-    }
-  }
-}
-  */
-
 

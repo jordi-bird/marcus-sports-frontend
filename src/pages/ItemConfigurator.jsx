@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_ITEM } from '../graphql/itemQueries';
@@ -49,6 +49,14 @@ export default function ItemConfigurator() {
 
   return (
     <div className="p-6">
+      <div className="border-b-4 text-white p-2 pb-4 mb-4">
+        <Link 
+            to={`/`}
+            className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded"
+        >
+        ← Torna enrere
+        </Link>
+      </div>
       <h1 className="text-3xl font-bold mb-6">Configura: {data.item.name}</h1>
       {parts.map(part => (
         <PartSection 

@@ -4,6 +4,7 @@ import {BrowserRouter as Router, Routes, Route,} from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import BackOfficeHome from "./pages/BackOfficeHome";
 import ItemForm from "./pages/ItemForm";
+import ItemPartForm from "./pages/ItemPartForm";
 import ItemConfigurator from "./pages/ItemConfigurator";
 
 function App() {
@@ -15,6 +16,8 @@ function App() {
         <Route path="/backoffice" element={<BackOfficeHome />} />
         <Route path="/backoffice/items/new" element={<ItemForm mode="create" />} />
         <Route path="/backoffice/items/:itemId/edit" element={<ItemForm mode="edit" />} />
+        <Route path="/backoffice/items/:itemId/parts/new" element={<ItemPartForm mode="create" />} />
+        <Route path="/backoffice/items/:itemId/parts/:itemPartId/edit" element={<ItemPartForm mode="edit" />} />
         
       </Routes>
     </Router>
