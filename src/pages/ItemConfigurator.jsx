@@ -36,16 +36,32 @@ export default function ItemConfigurator() {
     });
   };
 
-
+  if (loading) return <p>Carregant...</p>;
 
   const totalPrice = Object.values(selectedOptions).reduce((acc, option) => {
     return acc + getAdjustedPrice(option, selectedOptions);
   }, 0);
-  
-
-  if (loading) return <p>Carregant...</p>;
 
   const parts = data.item.itemParts;
+
+  //validació per mostrar parts, considerant les children
+  const isPartAndChildrenComplete = (part) => {
+    const attributesComplete = part.itemPartAttributes.every(attr => selectedOptions[attr.id]);
+  
+    const childrenComplete = part.children?.every(child => isPartAndChildrenComplete(child)) ?? true;
+  
+    return attributesComplete && childrenComplete;
+  };
+
+  // validació per mostrar botó de compra
+  const allAttributes = parts.flatMap(part =>
+    part.itemPartAttributes
+  );
+  
+  const isConfigurationComplete = allAttributes.every(attr => selectedOptions[attr.id]);
+  
+
+
 
   return (
     <div className="p-6">
@@ -58,16 +74,26 @@ export default function ItemConfigurator() {
         </Link>
       </div>
       <h1 className="text-3xl font-bold mb-6">Configura: {data.item.name}</h1>
-      {parts.map(part => (
-        <PartSection 
-          key={part.id} 
-          part={part} 
-          selectedOptions={selectedOptions}
-          handleSelect={handleSelect}
-          singleCompatibilityRules={singleCompatibilityRules}
-          level={0}
-        />
-      ))}
+      {parts.map((part, index) => {
+        const previousPart = parts[index - 1];
+        
+        const previousIsComplete = previousPart
+          ? isPartAndChildrenComplete(previousPart)
+          : true;
+        
+        const canShow = index === 0 || previousIsComplete;
+
+        return canShow ? (
+          <PartSection 
+            key={part.id} 
+            part={part} 
+            selectedOptions={selectedOptions}
+            handleSelect={handleSelect}
+            singleCompatibilityRules={singleCompatibilityRules}
+            level={0}
+          />
+        ) : null;
+      })}
       <div className="h-64"/>
       <div className="fixed bottom-0 left-0 right-0 bg-white  p-4 text-sm shadow-lg border-t-4 border-indigo-200 ">
         <div className="flex justify-between items-center mb-2">
@@ -108,7 +134,7 @@ export default function ItemConfigurator() {
             )}
             <div className="flex flex-col items-end mt-2">
               <p className="text-lg font-semibold">Preu total: {totalPrice.toFixed(2)} €</p>
-              {totalPrice > 0 && (
+              {isConfigurationComplete && totalPrice > 0 && (
                 <button
                   className="mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded"
                   onClick={() => {

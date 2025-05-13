@@ -15,50 +15,59 @@ export default function OptionSelector({
  
   
   const renderCompatibilities = () => {
-    return ( (option.rules || []).map(rule => {
-      switch(rule.ruleType){
+    return (option.rules || []).flatMap(rule => {
+      const baseKey = `${option.id}-${rule.id}`;
+  
+      switch (rule.ruleType) {
         case 'incompatibility':
-          //Si m'han pogut seleccionar --> no estic deshabilitada
-          //Si hi ha una selectedOptions igual a la targetOption o SourceOption de la regla estic deshabilitada
-          return (
-            <p key={`${option.id}-${rule.id}`} className="text-right text-xs text-red-500 ml-1 p-1">
-              Incompatible amb: <strong>{option.id === rule.targetOption.id? rule.sourceOption.name:rule.targetOption.name}</strong>
+          return [
+            <p key={`${baseKey}-incompatibility`} className="text-right text-xs text-red-500 ml-1 p-1">
+              Incompatible amb: <strong>{option.id === rule.targetOption.id ? rule.sourceOption.name : rule.targetOption.name}</strong>
             </p>
-          );
-        case 'compatibility':
-          return (
-            <>
-              {option.id === rule.sourceOption.id && (
-                <p key={`${option.id}-${rule.id}`} className="text-right text-xs text-indigo-500 ml-1 p-1">
-                  Només compatible amb: <strong>{rule.targetOption.name}</strong>
-                </p>
-              )}
-        
-              {option.id === rule.targetOption.id && rule.reciprocal && (
-                <p key={`${option.id}-${rule.id}-reciprocal`} className="text-right text-xs text-indigo-500 ml-1 p-1">
-                  Només compatible amb: <strong>{rule.sourceOption.name}</strong>
-                </p>
-              )}
-        
-              {option.id === rule.targetOption.id && !rule.reciprocal && (
-                <p key={`${option.id}-${rule.id}-unique`} className="text-right text-xs text-gray-400 ml-1 p-1">
-                  Única compatible per: <strong>{rule.sourceOption.name}</strong>
-                </p>
-              )}
-            </>
-          );
+          ];
+  
+        case 'compatibility': {
+          const items = [];
+  
+          if (option.id === rule.sourceOption.id) {
+            items.push(
+              <p key={`${baseKey}-source`} className="text-right text-xs text-indigo-500 ml-1 p-1">
+                Només compatible amb: <strong>{rule.targetOption.name}</strong>
+              </p>
+            );
+          }
+  
+          if (option.id === rule.targetOption.id && rule.reciprocal) {
+            items.push(
+              <p key={`${baseKey}-reciprocal`} className="text-right text-xs text-indigo-500 ml-1 p-1">
+                Només compatible amb: <strong>{rule.sourceOption.name}</strong>
+              </p>
+            );
+          }
+  
+          if (option.id === rule.targetOption.id && !rule.reciprocal) {
+            items.push(
+              <p key={`${baseKey}-unique`} className="text-right text-xs text-gray-400 ml-1 p-1">
+                Única compatible per: <strong>{rule.sourceOption.name}</strong>
+              </p>
+            );
+          }
+  
+          return items;
+        }
+  
         case 'price_modifier':
-          return (
-            <p key={`${option.id}-${rule.id}`} className="text-right text-xs text-blue-500 ml-1 p-1">
-              Alertació de preu amb: <strong>{option.id === rule.targetOption.id? rule.sourceOption.name:rule.targetOption.name}</strong>
+          return [
+            <p key={`${baseKey}-price`} className="text-right text-xs text-blue-500 ml-1 p-1">
+              Alertació de preu amb: <strong>{option.id === rule.targetOption.id ? rule.sourceOption.name : rule.targetOption.name}</strong>
             </p>
-          );
+          ];
+  
         default:
-          return null;
+          return [];
       }
-    })
-    )
-  }
+    });
+  };
 
 
   return (
