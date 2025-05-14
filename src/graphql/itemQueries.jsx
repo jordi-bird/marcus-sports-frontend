@@ -48,10 +48,6 @@ export const GET_ITEM = gql`
                       id
                       name
                     }
-                    targetPart {
-                      id
-                      name
-                    }
                     ruleType
                     reciprocal
                     operation
@@ -74,10 +70,6 @@ export const GET_ITEM = gql`
                     name
                   }
                   targetOption {
-                    id
-                    name
-                  }
-                  targetPart {
                     id
                     name
                   }
@@ -104,10 +96,6 @@ export const GET_ITEM = gql`
                   name
                 }
                 targetOption {
-                  id
-                  name
-                }
-                targetPart {
                   id
                   name
                 }
@@ -162,10 +150,6 @@ export const GET_ITEM_PART_ATTRIBUTE_OPTIONS = gql`
                         name
                     }
                     targetOption {
-                        id
-                        name
-                    }
-                    targetPart {
                         id
                         name
                     }

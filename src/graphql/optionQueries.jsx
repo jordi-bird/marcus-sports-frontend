@@ -29,10 +29,6 @@ export const GET_ATTRIBUTE_OPTIONS = gql`
                         id
                         name
                     }
-                    targetPart {
-                        id
-                        name
-                    }
                     ruleType
                     reciprocal
                     operation
