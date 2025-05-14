@@ -11,7 +11,7 @@ export const GET_ATTRIBUTE_OPTION = gql`
 */
 
 export const GET_ATTRIBUTE_OPTIONS = gql`
-    query GetItemPartAttributesOptions($itemPartAttributeId: ID!) {
+    query GetItemPartAttributeOptions($itemPartAttributeId: ID!) {
         itemPartAttribute(id: $itemPartAttributeId) {
             name
             itemPartAttributeOptions {
@@ -20,24 +20,26 @@ export const GET_ATTRIBUTE_OPTIONS = gql`
                 price
                 stock
                 rules {
-                sourceOption {
                     id
-                    name
-                }
-                targetOption {
-                    id
-                    name
-                }
-                targetPart {
-                    id
-                    name
-                }
-                ruleType
-                reciprocal
-                operation
-                value
+                    sourceOption {
+                        id
+                        name
+                    }
+                    targetOption {
+                        id
+                        name
+                    }
+                    targetPart {
+                        id
+                        name
+                    }
+                    ruleType
+                    reciprocal
+                    operation
+                    value
                 }
             }
         }
     }
 `;
+

@@ -54,34 +54,36 @@ export default function ItemPartForm({ mode }) {
     };
 
     const handleSubmit = async (e) => {
-    e.preventDefault();
+        e.preventDefault();
 
-    try {
-        if (isEditMode) {
-        await updateItemPart({
-            variables: {
-            id: itemPartId,
-            name: formData.name,
-            description: formData.description,
-            parentId: formData.parentId || null,
-            },
-        });
-        } else {
-        await CreateItemPart({
-            variables: {
-            itemId,
-            name: formData.name,
-            description: formData.description,
-            parentId: formData.parentId || null,
-            },
-        });
+        try {
+            if (isEditMode) {
+            await updateItemPart({
+                variables: {
+                id: itemPartId,
+                name: formData.name,
+                description: formData.description,
+                parentId: formData.parentId || null,
+                },
+            });
+            } else {
+            await CreateItemPart({
+                variables: {
+                itemId,
+                name: formData.name,
+                description: formData.description,
+                parentId: formData.parentId || null,
+                },
+            });
+            }
+
+            navigate('/backoffice/items/' + itemId + '/edit');
+        } catch (error) {
+            console.error('Error en guardar la part:', error.message);
         }
-
-        navigate('/backoffice/items/' + itemId + '/edit');
-    } catch (error) {
-        console.error('Error en guardar la part:', error.message);
-    }
     };
+
+    const item = itemData?.item;
 
     return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -141,7 +143,7 @@ export default function ItemPartForm({ mode }) {
                         .flatMap((part) => [part, ...(part.children || [])])
                         .filter((part) => part.id !== itemPartId)
                         .map((part) => {
-                            const parentName = itemData.item.itemParts.find(p => p.id === part.parentId)?.name;
+                            const parentName = item.itemParts.find(p => p.id === part.parentId)?.name;
                             return (
                             <option key={part.id} value={part.id}>
                                 {part.name} {parentName ? `- filla de ${parentName}` : ''}
@@ -160,7 +162,7 @@ export default function ItemPartForm({ mode }) {
         {isEditMode && (
             <div className="p-6 mx-auto mt-10 border-t pt-6">
                 <h1 className="text-2xl font-bold mb-4"> Atributs de {formData.name}</h1>
-                <ItemAttributeList itemPartId={itemPartId} />
+                <ItemAttributeList itemPartId={itemPartId} item={item} />
             </div>
         )}
     </div>

@@ -19,7 +19,6 @@ export default function AttributeBlock({ attribute, selectedOptions, singleCompa
           final *= rule.value;
         }
       }
-      console.log("preu final: "+final);  
 
     });
 

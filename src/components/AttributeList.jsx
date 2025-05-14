@@ -5,7 +5,7 @@ import { useQuery, useMutation } from '@apollo/client';
 import { GET_ITEM_PART_ATTRIBUTES } from '../graphql/attributeQueries';
 import { DELETE_ATTRIBUTE } from '../graphql/attributeMutations';
 
-export default function ItemAttributeList({ itemPartId }) {
+export default function ItemAttributeList({ itemPartId, item }) {
   const { data, loading } = useQuery(GET_ITEM_PART_ATTRIBUTES, { variables: { itemPartId } });
 
   const [deleteItemPartAttribute] = useMutation(DELETE_ATTRIBUTE, {
@@ -60,7 +60,7 @@ export default function ItemAttributeList({ itemPartId }) {
 
           {expandedAttrId === attr.id && (
             <div className="mt-2 pl-4 border-l">
-              <OptionList attributeId={attr.id} />
+              <OptionList attributeId={attr.id} item={item}/>
             </div>
           )}
         </div>
