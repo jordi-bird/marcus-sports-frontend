@@ -7,7 +7,7 @@ export default function AttributeBlock({ attribute, selectedOptions, singleCompa
 
     // Aplica ajustos segons regles de dependència
     //Si existeix una opcio seleccionada que és igual a la sourceOption de la regla
-    // i la regla és de tipus price_modifier, i l
+    // i la regla és de tipus price_modifier
     option.rules?.filter(r => r.ruleType === 'price_modifier' && r.targetOption.id == option.id)?.forEach(rule => {
       const dependencyAttr = Object.values(selectedOptions).find(
         selected => selected.id === rule.sourceOption.id
@@ -46,13 +46,22 @@ export default function AttributeBlock({ attribute, selectedOptions, singleCompa
             }
           });
 
+          //Aqui mirar si te una regla de compatibilitat única i hi ha una opció seleccionada que no es aquesta
+          const isBlockedByPrevSelection = (option.rules || []).some(rule => {
+            if (rule.ruleType === 'compatibility' && rule.sourceOption.id === option.id) {
+              return !selectedIds.has(rule.targetOption.id);
+            }
+          });
           // Mirem si està activada una regla de compatibilitat única que inhabilita la opció
           const isBlockedByCompatibility = 
             singleCompatibilityRules &&
             singleCompatibilityRules[attribute.id] &&
             singleCompatibilityRules[attribute.id] !== option.id;
+          
+          const isOutOfStock = option.stock === 0;
+          
 
-          const isDisabled = isIncompatible || isBlockedByCompatibility;
+          const isDisabled = isIncompatible || isBlockedByCompatibility || isBlockedByPrevSelection || isOutOfStock;
           
           const finalPrice = calculateFinalPrice(option);
 

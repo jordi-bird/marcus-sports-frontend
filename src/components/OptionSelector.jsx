@@ -12,6 +12,7 @@ export default function OptionSelector({
 }) {
   
   const hasOverride = finalPrice !== undefined && finalPrice !== option.price;
+
  
   
   const renderCompatibilities = () => {
@@ -52,22 +53,60 @@ export default function OptionSelector({
               </p>
             );
           }
+          
   
           return items;
         }
   
         case 'price_modifier':
-          return [
-            <p key={`${baseKey}-price`} className="text-right text-xs text-blue-500 ml-1 p-1">
-              Alertació de preu amb: <strong>{option.id === rule.targetOption.id ? rule.sourceOption.name : rule.targetOption.name}</strong>
-            </p>
-          ];
+          if (option.id === rule.targetOption.id) {
+            return [
+              <p key={`${baseKey}-price`} className="text-right text-xs text-blue-500 ml-1 p-1">
+                Preu Alterat per: <strong>{rule.sourceOption.name }</strong>
+              </p>
+            ];
+          }
+          else {
+            return [
+              <p key={`${baseKey}-price`} className="text-right text-xs text-blue-500 ml-1 p-1">
+                Altera el preu de: <strong>{rule.targetOption.name}</strong>{' '}
+                ({rule.operation === 'add' ? `+${rule.value}€` : `×${rule.value}€`})
+              </p>
+            ];
+          }
   
         default:
           return [];
       }
     });
   };
+
+  const renderStock = () => {
+    if (option.stock === 0) {
+      return (
+        <p className="text-right text-xs text-red-500 ml-1 p-1">
+          Sense stock
+        </p>
+      );
+    }
+    else{
+      if (option.stock < 5) {
+        return (
+          <p className="text-right text-xs text-yellow-500 ml-1 p-1">
+            Queden {option.stock} unitats
+          </p>
+        );
+      }
+      if (option.stock >= 5) {
+        return (
+          <p className="text-right text-xs text-green-500 ml-1 p-1">
+            Stock disponible
+          </p>
+        );
+      }
+    }
+    return null;
+  }
 
 
   return (
@@ -95,6 +134,7 @@ export default function OptionSelector({
           ) : (
             <span>{option.price.toFixed(2)} €</span>
           )}
+          {renderStock()}
         </div>
       </button>
 
