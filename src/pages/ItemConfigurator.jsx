@@ -11,7 +11,6 @@ import { faChevronUp, faChevronDown, faArrowRight, faShoppingBasket, faShoppingC
 export default function ItemConfigurator() {
   const { itemId } = useParams();
 
-  // Aqui passar parametre tipus id: itemId??
   const { data, loading } = useQuery(GET_ITEM, {
     variables: { itemId },
   });
@@ -30,6 +29,7 @@ export default function ItemConfigurator() {
       };
       // Actualitza les regles de compatibilitat
       const updatedRules = updateCompatibilityRules(option, previousOption, parts, singleCompatibilityRules);
+      console.log(updatedRules);
       setSingleCompatibilityRules(updatedRules);
       return updatedSelectedOptions
       
@@ -47,9 +47,7 @@ export default function ItemConfigurator() {
   //validació per mostrar parts, considerant les children
   const isPartAndChildrenComplete = (part) => {
     const attributesComplete = part.itemPartAttributes.every(attr => selectedOptions[attr.id]);
-  
     const childrenComplete = part.children?.every(child => isPartAndChildrenComplete(child)) ?? true;
-  
     return attributesComplete && childrenComplete;
   };
 
@@ -60,7 +58,15 @@ export default function ItemConfigurator() {
   
   const isConfigurationComplete = allAttributes.every(attr => selectedOptions[attr.id]);
   
+  const optionIdToAttributeId = {};
 
+  parts.forEach(part => {
+    part.itemPartAttributes.forEach(attr => {
+      attr.itemPartAttributeOptions.forEach(option => {
+        optionIdToAttributeId[option.id] = attr.id;
+      });
+    });
+  });
 
 
   return (
@@ -91,6 +97,7 @@ export default function ItemConfigurator() {
             handleSelect={handleSelect}
             singleCompatibilityRules={singleCompatibilityRules}
             level={0}
+            optionIdToAttributeId={optionIdToAttributeId}
           />
         ) : null;
       })}

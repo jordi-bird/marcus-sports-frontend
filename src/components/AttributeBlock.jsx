@@ -1,6 +1,6 @@
 import OptionSelector from './OptionSelector';
 
-export default function AttributeBlock({ attribute, selectedOptions, singleCompatibilityRules, handleSelect }) {
+export default function AttributeBlock({ attribute, selectedOptions, singleCompatibilityRules, handleSelect, optionIdToAttributeId }) {
   
   const calculateFinalPrice = (option) => {
     let final = option.price;
@@ -47,11 +47,24 @@ export default function AttributeBlock({ attribute, selectedOptions, singleCompa
           });
 
           //Aqui mirar si te una regla de compatibilitat única i hi ha una opció seleccionada que no es aquesta
-          const isBlockedByPrevSelection = (option.rules || []).some(rule => {
-            if (rule.ruleType === 'compatibility' && rule.sourceOption.id === option.id) {
-              return !selectedIds.has(rule.targetOption.id);
-            }
+          const isBlockedByPrevSelection = (option.rules || [])
+          .filter(rule =>
+            rule.ruleType === 'compatibility' &&
+            rule.sourceOption?.id === option.id
+          )
+          .some(rule => {
+            const targetId = rule.targetOption?.id;
+
+            const targetIsNotSelected = !Object.values(selectedOptions).some(
+              selectedOption => selectedOption?.id === targetId
+            );
+
+            const targetAttributeId = optionIdToAttributeId[targetId];
+            const targetAttributeHasSelection = selectedOptions.hasOwnProperty(targetAttributeId);
+
+            return targetIsNotSelected && targetAttributeHasSelection;
           });
+
           // Mirem si està activada una regla de compatibilitat única que inhabilita la opció
           const isBlockedByCompatibility = 
             singleCompatibilityRules &&
@@ -59,8 +72,6 @@ export default function AttributeBlock({ attribute, selectedOptions, singleCompa
             singleCompatibilityRules[attribute.id] !== option.id;
           
           const isOutOfStock = option.stock === 0;
-          
-
           const isDisabled = isIncompatible || isBlockedByCompatibility || isBlockedByPrevSelection || isOutOfStock;
           
           const finalPrice = calculateFinalPrice(option);

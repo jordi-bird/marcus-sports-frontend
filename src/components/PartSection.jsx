@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import AttributeBlock from './AttributeBlock';
 
 
-export default function PartSection({ part, level, selectedOptions, singleCompatibilityRules, handleSelect }) {
+export default function PartSection({ part, level, selectedOptions, singleCompatibilityRules, handleSelect, optionIdToAttributeId }) {
   const indent = `ml-${level * 4}`;
 
   const parentClasses = level
@@ -51,6 +51,7 @@ export default function PartSection({ part, level, selectedOptions, singleCompat
               selectedOptions={selectedOptions}
               handleSelect={handleSelect}
               singleCompatibilityRules={singleCompatibilityRules}
+              optionIdToAttributeId={optionIdToAttributeId}
             />
           </div>
         ) : null;
@@ -67,6 +68,7 @@ export default function PartSection({ part, level, selectedOptions, singleCompat
             selectedOptions={selectedOptions}
             handleSelect={handleSelect}
             singleCompatibilityRules={singleCompatibilityRules}
+            optionIdToAttributeId={optionIdToAttributeId}
           />
         ) : null;
       })}

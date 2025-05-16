@@ -1,16 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useMutation, useQuery } from '@apollo/client';
+// components/OptionForm.jsx
+import { useState, useEffect, useMemo } from 'react';
+import { useMutation } from '@apollo/client';
 import { CREATE_OPTION, UPDATE_OPTION } from '../graphql/optionMutations';
+import RuleList from './RuleList';
 
 export default function OptionForm({ option: initialOption, attributeId, item, onClose, onCreated }) {
-
-  const [formData, setFormData] = useState({
-    name: '',
-    price: '',
-    stock: 0,
-  });
-
-
+  const [formData, setFormData] = useState({ name: '', price: '', stock: 0 });
   const [editingOption, setEditingOption] = useState(initialOption);
   const [incompatibilities, setIncompatibilities] = useState([]);
   const [compatibilities, setCompatibilities] = useState([]);
@@ -27,146 +22,109 @@ export default function OptionForm({ option: initialOption, attributeId, item, o
   });
 
   useEffect(() => {
-    if (isEditMode && editingOption) {
-      setFormData({
-        name: editingOption.name || '',
-        price: editingOption.price || 0,
-        stock: editingOption.stock || 0,
-      });
+    if (!isEditMode || !editingOption) return;
 
-      if (isEditMode && editingOption?.rules) {
-        setIncompatibilities(
-          editingOption.rules
-            .filter(rule => rule.ruleType === 'incompatibility')
-            .map(rule => {
-              const isCurrentOptionSource = rule.sourceOption?.id === editingOption.id;
-              return {
-                sourceOptionId: editingOption.id,
-                targetOptionId: isCurrentOptionSource ? rule.targetOption?.id : rule.sourceOption?.id,
-                reciprocal: true, // sempre true
-              };
-            })
-        );
+    setFormData({
+      name: editingOption.name || '',
+      price: editingOption.price || 0,
+      stock: editingOption.stock || 0,
+    });
 
-        setCompatibilities(
-          editingOption.rules
-            .filter(rule => rule.ruleType === 'compatibility' && rule.sourceOption.id ===  editingOption.id)
-            .map(rule => {
-              const isCurrentOptionSource = rule.sourceOption?.id === editingOption.id;
-              return {
-                sourceOptionId: editingOption.id,
-                targetOptionId: isCurrentOptionSource ? rule.targetOption?.id : rule.sourceOption?.id,
-                reciprocal: rule.reciprocal ?? false, // per defecte false
-              };
-            })
-        );
-      
-        setPriceOverrides(
-          editingOption.rules
-            .filter(rule => rule.ruleType === 'price_modifier' && rule.sourceOption.id ===  editingOption.id)
-            .map(rule => ({
-              sourceOptionId: rule.sourceOption?.id || '',  
-              targetOptionId: rule.targetOption?.id || '',
-              modifierType: rule.operation || 'add', // 'add' o 'multiply'
-              value: rule.value || 0,
-              reciprocal: false, // sempre false segons requeriments
-            }))
-        );
-      }
-    }
+    const rules = editingOption.rules || [];
+
+    setIncompatibilities(
+      rules.filter(r => r.ruleType === 'incompatibility').map(r => ({
+        sourceOptionId: editingOption.id,
+        targetOptionId: r.sourceOption?.id === editingOption.id ? r.targetOption?.id : r.sourceOption?.id,
+        reciprocal: true,
+      }))
+    );
+
+    setCompatibilities(
+      rules.filter(r => r.ruleType === 'compatibility' && r.sourceOption?.id === editingOption.id).map(r => ({
+        sourceOptionId: r.sourceOption.id,
+        targetOptionId: r.targetOption?.id || '',
+        reciprocal: r.reciprocal ?? false,
+      }))
+    );
+
+    setPriceOverrides(
+      rules.filter(r => r.ruleType === 'price_modifier' && r.sourceOption?.id === editingOption.id).map(r => ({
+        sourceOptionId: r.sourceOption.id,
+        targetOptionId: r.targetOption?.id || '',
+        modifierType: r.operation || 'add',
+        value: r.value || 0,
+        reciprocal: false,
+      }))
+    );
   }, [editingOption, isEditMode]);
 
-  const allAvailableOptions = item.itemParts.flatMap(part =>
-    part.itemPartAttributes.filter(attr => !attributeId || attr.id !== attributeId) 
-    .flatMap(attribute =>
-      attribute.itemPartAttributeOptions
-      .map(opt => ({
-        id: opt.id,
-        label: `${part.name}-${attribute.name}-${opt.name}`,
-      }))
+  const allAvailableOptions = useMemo(() => (
+    item.itemParts.flatMap(part =>
+      part.itemPartAttributes.filter(attr => !attributeId || attr.id !== attributeId)
+        .flatMap(attr =>
+          attr.itemPartAttributeOptions.map(opt => ({
+            id: opt.id,
+            label: `${part.name}-${attr.name}-${opt.name}`,
+          }))
+        )
     )
-  );
-
-  const handleAddIncompatibility = () =>
-    setIncompatibilities((prev) => [...prev, { sourceOptionId: editingOption.id, targetOptionId: '', reciprocal: true }]);
-
-  const handleAddCompatibility = () =>
-    setCompatibilities((prev) => [...prev, { sourceOptionId: editingOption.id, targetOptionId: '', reciprocal: false }]);
-
-  const handleAddPriceOverride = () =>
-    setPriceOverrides((prev) => [
-      ...prev,
-      { sourceOptionId: editingOption.id, targetOptionId: '', modifierType: 'add', value: 0, reciprocal: false },
-    ]);
+  ), [item, attributeId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const baseInput = {
+      name: formData.name,
+      price: parseFloat(formData.price),
+      stock: parseInt(formData.stock),
+      rules: [
+        ...incompatibilities.map(r => ({ ruleType: 'incompatibility', ...r })),
+        ...compatibilities.map(r => ({ ruleType: 'compatibility', ...r })),
+        ...priceOverrides.map(r => ({
+          ruleType: 'price_modifier',
+          sourceOptionId: r.sourceOptionId,
+          targetOptionId: r.targetOptionId,
+          operation: r.modifierType,
+          value: parseFloat(r.value),
+          reciprocal: false,
+        })),
+      ],
+    };
+
+    if (isEditMode) baseInput.id = editingOption.id;
+    else baseInput.itemPartAttributeId = attributeId;
+
     try {
-      const baseInput = {
-        name: formData.name,
-        price: parseFloat(formData.price),
-        stock: parseInt(formData.stock),
-        rules: [
-          ...incompatibilities.map((r) => ({
-            ruleType: 'incompatibility',
-            sourceOptionId: r.sourceOptionId,
-            targetOptionId: r.targetOptionId,
-            reciprocal: true,
-          })),
-          ...compatibilities.map((r) => ({
-            ruleType: 'compatibility',
-            sourceOptionId: r.sourceOptionId,
-            targetOptionId: r.targetOptionId,
-            reciprocal: r.reciprocal,
-          })),
-          ...priceOverrides.map((r) => ({
-            ruleType: 'price_modifier',
-            sourceOptionId: r.sourceOptionId,
-            targetOptionId: r.targetOptionId,
-            operation: r.modifierType,
-            value: parseFloat(r.value),
-            reciprocal: false,
-          })),
-        ],
-      };
-      
-      // Afegim el camp corresponent segons el mode
-      if (isEditMode) {
-        baseInput.id = editingOption.id;
+      const mutation = isEditMode ? updateOption : createOption;
+      const { data } = await mutation({ variables: { input: baseInput } });
+
+      if (!isEditMode) {
+        const newOption = data?.createItemPartAttributeOption?.itemPartAttributeOption;
+        setEditingOption(newOption);
+        onCreated?.(newOption);
       } else {
-        baseInput.itemPartAttributeId = attributeId;
-      }
-
-      const variables = {
-        input: baseInput,
-      };
-
-      if(isEditMode) {
-        await updateOption({ variables });
         onClose?.();
       }
-      else{
-        const { data } =  await createOption({ variables }); 
-        const newOption = data?.createItemPartAttributeOption?.itemPartAttributeOption;
-        setEditingOption(newOption); 
-    
-        // També pots fer un refetch o recarregar més dades si cal
-      }      
     } catch (err) {
       console.error('Error desant l’opció:', err.message);
     }
   };
 
-  const handleRuleChange = (setter, index, field, value) => {
-    setter((prev) => {
+  const handleRuleChange = (setter) => (index, field, value) => {
+    setter(prev => {
       const updated = [...prev];
       updated[index][field] = value;
       return updated;
     });
   };
 
-  const handleRemoveRule = (setter, indexToRemove) => {
-    setter((prev) => prev.filter((_, i) => i !== indexToRemove));
+  const handleRuleRemove = (setter) => (index) => {
+    setter(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRuleAdd = (setter, template) => () => {
+    setter(prev => [...prev, template]);
   };
 
   return (
@@ -210,138 +168,53 @@ export default function OptionForm({ option: initialOption, attributeId, item, o
         />
       </div>
 
-      { isEditMode && (
+      {isEditMode && (
         <>
-        {/* Incompatibilitat */}
-        <div>
-          <div className="flex justify-between items-center mb-1">
-            <label className="font-medium">Opcions incompatibles</label>
-            <button type="button" onClick={handleAddIncompatibility} className="text-sm text-blue-600">
-              + Afegir
-            </button>
-          </div>
-          {incompatibilities.map((rule, index) => (
-            <div key={index} className="flex gap-2 mb-1 items-center">
-              <select
-                className="flex-1 border px-2 py-1 rounded"
-                value={rule.targetOptionId}
-                onChange={(e) =>
-                  handleRuleChange(setIncompatibilities, index, 'targetOptionId', e.target.value)
-                }
-              >
-                <option value="">-- Selecciona --</option>
-                {allAvailableOptions.map((opt) => (
-                  <option key={opt.id} value={opt.id}>{opt.label}</option>
-                ))}
-              </select>
-              <button
-                type="button"
-                className="text-red-600 text-sm"
-                onClick={() => handleRemoveRule(setIncompatibilities, index)}
-              >
-                🗑️
-              </button>
-            </div>
-          ))}
-        </div>
+          <RuleList
+            title="Opcions incompatibles"
+            rules={incompatibilities}
+            options={allAvailableOptions}
+            onAdd={handleRuleAdd(setIncompatibilities, {
+              sourceOptionId: editingOption.id,
+              targetOptionId: '',
+              reciprocal: true,
+            })}
+            onRemove={handleRuleRemove(setIncompatibilities)}
+            onChange={handleRuleChange(setIncompatibilities)}
+          />
 
-        {/* Només compatibles */}
-        <div>
-          <div className="flex justify-between items-center mb-1">
-            <label className="font-medium">Només compatibles amb</label>
-            <button type="button" onClick={handleAddCompatibility} className="text-sm text-blue-600">
-              + Afegir
-            </button>
-          </div>
-          {compatibilities.map((rule, index) => (
-            <div key={index} className="flex gap-2 items-center mb-1">
-              <select
-                className="flex-1 border px-2 py-1 rounded"
-                value={rule.targetOptionId}
-                onChange={(e) =>
-                  handleRuleChange(setCompatibilities, index, 'targetOptionId', e.target.value)
-                }
-              >
-                <option value="">-- Selecciona --</option>
-                {allAvailableOptions.map((opt) => (
-                  <option key={opt.id} value={opt.id}>{opt.label}</option>
-                ))}
-              </select>
-              <label className="text-sm ml-2">
-                <input
-                  type="checkbox"
-                  checked={rule.reciprocal}
-                  onChange={(e) =>
-                    handleRuleChange(setCompatibilities, index, 'reciprocal', e.target.checked)
-                  }
-                  className="mr-1"
-                />
-                Reciprocal
-              </label>
-              <button
-                type="button"
-                className="text-red-600 text-sm"
-                onClick={() => handleRemoveRule(setCompatibilities, index)}
-              >
-                🗑️
-              </button>
-            </div>
-          ))}
-        </div>
+          <RuleList
+            title="Només compatibles amb"
+            rules={compatibilities}
+            options={allAvailableOptions}
+            onAdd={handleRuleAdd(setCompatibilities, {
+              sourceOptionId: editingOption.id,
+              targetOptionId: '',
+              reciprocal: false,
+            })}
+            onRemove={handleRuleRemove(setCompatibilities)}
+            onChange={handleRuleChange(setCompatibilities)}
+            showReciprocal
+          />
 
-        {/* Price override */}
-        <div>
-          <div className="flex justify-between items-center mb-1">
-            <label className="font-medium">Modificadors de preu</label>
-            <button type="button" onClick={handleAddPriceOverride} className="text-sm text-blue-600">
-              + Afegir
-            </button>
-          </div>
-          {priceOverrides.map((rule, index) => (
-            <div key={index} className="flex gap-2 mb-1 items-center">
-              <select
-                className="flex-1 border px-2 py-1 rounded"
-                value={rule.targetOptionId}
-                onChange={(e) =>
-                  handleRuleChange(setPriceOverrides, index, 'targetOptionId', e.target.value)
-                }
-              >
-                <option value="">-- Selecciona --</option>
-                {allAvailableOptions.map((opt) => (
-                  <option key={opt.id} value={opt.id}>{opt.label}</option>
-                ))}
-              </select>
-              <select
-                value={rule.modifierType}
-                onChange={(e) =>
-                  handleRuleChange(setPriceOverrides, index, 'modifierType', e.target.value)
-                }
-                className="border rounded px-2 py-1"
-              >
-                <option value="add">+ Suma</option>
-                <option value="multiply">× Multiplica</option>
-              </select>
-              <input
-                type="number"
-                className="w-24 border px-2 py-1 rounded"
-                value={rule.value}
-                onChange={(e) => handleRuleChange(setPriceOverrides, index, 'value', e.target.value)}
-                placeholder="Valor"
-              />
-              <button
-                type="button"
-                className="text-red-600 text-sm"
-                onClick={() => handleRemoveRule(setPriceOverrides, index)}
-              >
-                🗑️
-              </button>
-            </div>
-          ))}
-        
-        </div>
-      </>)}
+          <RuleList
+            title="Modificadors de preu"
+            rules={priceOverrides}
+            options={allAvailableOptions}
+            onAdd={handleRuleAdd(setPriceOverrides, {
+              sourceOptionId: editingOption.id,
+              targetOptionId: '',
+              modifierType: 'add',
+              value: 0,
+              reciprocal: false,
+            })}
+            onRemove={handleRuleRemove(setPriceOverrides)}
+            onChange={handleRuleChange(setPriceOverrides)}
+            showModifierFields
+          />
+        </>
+      )}
 
-      {/* Accions */}
       <div className="flex gap-2 justify-end mt-4">
         <button type="button" onClick={onClose} className="text-gray-500 hover:underline">
           Cancel·la
