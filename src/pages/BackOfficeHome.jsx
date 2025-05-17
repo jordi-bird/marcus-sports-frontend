@@ -27,6 +27,14 @@ export default function BackOfficeHome() {
 
   return (
     <div className="p-6">
+      <div className="border-b-4 text-white p-2 pb-4 mb-4">
+      <Link 
+            to={`/`}
+            className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded"
+        >
+        ← Ves a la Home
+      </Link>
+      </div>
       <h1 className="text-2xl font-bold mb-4">Gestió d’Ítems</h1>
 
       <div className="mb-4">

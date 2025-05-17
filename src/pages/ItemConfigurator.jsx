@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_ITEM } from '../graphql/itemQueries';
@@ -6,10 +6,11 @@ import PartSection from '../components/PartSection';
 import updateCompatibilityRules from '../utils/selectUtils';
 import  getAdjustedPrice from '../utils/priceUtils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronUp, faChevronDown, faArrowRight, faShoppingBasket, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
+import { faChevronUp, faChevronDown, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 
 export default function ItemConfigurator() {
   const { itemId } = useParams();
+  const navigate = useNavigate();
 
   const { data, loading } = useQuery(GET_ITEM, {
     variables: { itemId },
@@ -29,7 +30,6 @@ export default function ItemConfigurator() {
       };
       // Actualitza les regles de compatibilitat
       const updatedRules = updateCompatibilityRules(option, previousOption, parts, singleCompatibilityRules);
-      console.log(updatedRules);
       setSingleCompatibilityRules(updatedRules);
       return updatedSelectedOptions
       
@@ -67,6 +67,11 @@ export default function ItemConfigurator() {
       });
     });
   });
+
+  const handleCheckout = () => {
+    localStorage.setItem('selectedOptions', JSON.stringify(selectedOptions));
+    navigate('/checkout');
+  };  
 
 
   return (
@@ -144,10 +149,7 @@ export default function ItemConfigurator() {
               {isConfigurationComplete && totalPrice > 0 && (
                 <button
                   className="mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded"
-                  onClick={() => {
-                    // navigate(`/checkout/${itemId}`);
-                    alert('Funcionalitat de checkout pendent de desenvolupar.');
-                  }}
+                  onClick={handleCheckout}
                 >
                   Comprar <FontAwesomeIcon icon={faShoppingCart} size="lg" />
                 </button>

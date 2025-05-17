@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const { loading, error, data } = useQuery(GET_ITEMS);
-  
   const navigate = useNavigate();
 
   if (loading) return <p className="text-center text-xl text-gray-500">Carregant productes...</p>;
@@ -14,6 +13,10 @@ const Home = () => {
 
   const handleClick = (itemId) => {
     navigate(`/configure/${itemId}`);
+  };
+
+  const goToBackoffice = () => {
+    navigate('/backoffice');
   };
 
   return (
@@ -35,6 +38,18 @@ const Home = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Botó i text a sota de la graella */}
+        <hr>
+        </hr><div className="mt-8 text-center">
+          <p className="mb-2 text-gray-500 italic">o si vols crear o gestionar els items ves al...</p>
+          <button
+            onClick={goToBackoffice}
+            className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+          >
+            Back Office
+          </button>
         </div>
       </div>
     </div>

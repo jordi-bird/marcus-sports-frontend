@@ -6,6 +6,7 @@ import BackOfficeHome from "./pages/BackOfficeHome";
 import ItemForm from "./pages/ItemForm";
 import ItemPartForm from "./pages/ItemPartForm";
 import ItemConfigurator from "./pages/ItemConfigurator";
+import CheckoutPage from "./pages/CheckoutPage";  
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/configure/:itemId" element={<ItemConfigurator />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/backoffice" element={<BackOfficeHome />} />
         <Route path="/backoffice/items/new" element={<ItemForm mode="create" />} />
         <Route path="/backoffice/items/:itemId/edit" element={<ItemForm mode="edit" />} />
