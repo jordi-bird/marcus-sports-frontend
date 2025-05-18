@@ -1,4 +1,3 @@
-// components/OptionForm.jsx
 import { useState, useEffect, useMemo } from 'react';
 import { useMutation } from '@apollo/client';
 import { CREATE_OPTION, UPDATE_OPTION } from '../graphql/optionMutations';

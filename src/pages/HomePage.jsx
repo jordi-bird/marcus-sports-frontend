@@ -22,7 +22,7 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-8 flex flex-col items-center">
       <div className="max-w-3xl w-full bg-white shadow-lg rounded-xl p-6 space-y-6">
-        <h1 className="text-4xl font-semibold text-center text-indigo-600">Benvingut a la botiga de Marcus</h1>
+        <h1 className="text-4xl font-semibold text-center text-indigo-600">Benvingut a la botiga del Marcus</h1>
         <p className="text-center text-lg text-gray-500">Selecciona un producte per començar la configuració personalitzada.</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -40,7 +40,7 @@ const Home = () => {
           ))}
         </div>
 
-        {/* Botó i text a sota de la graella */}
+        {/* enllaç a backoffice */}
         <hr>
         </hr><div className="mt-8 text-center">
           <p className="mb-2 text-gray-500 italic">o si vols crear o gestionar els items ves al...</p>
