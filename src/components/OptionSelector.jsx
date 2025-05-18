@@ -70,7 +70,7 @@ export default function OptionSelector({
             return [
               <p key={`${baseKey}-price`} className="text-right text-xs text-blue-500 ml-1 p-1">
                 Altera el preu de: <strong>{rule.targetOption.name}</strong>{' '}
-                ({rule.operation === 'add' ? `+${rule.value}€` : `×${rule.value}€`})
+                ({rule.operation === 'add' ? `+${rule.value}€` : `${((rule.value - 1.0)*100.0).toFixed(0)}%`})
               </p>
             ];
           }

@@ -29,8 +29,8 @@ export default function AttributeBlock({ attribute, selectedOptions, singleCompa
 
   return (
     <div className="mb-4">
-      <h3 className="text-xl font-semibold text-gray-800 tracking-wide mb-2">{attribute.name}</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 border-b-2 border-gray-300 pb-1">
+      <h3 className="text-xl font-semibold text-gray-800 tracking-wide mb-2 border-b-2 border-gray-300 pb-2">{attribute.name}</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 pb-1">
         {attribute.itemPartAttributeOptions.map(option => {
           const isSelected = selectedOptions[attribute.id]?.id === option.id;
           
